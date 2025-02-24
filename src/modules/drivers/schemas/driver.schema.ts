@@ -1,19 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema()
 export class Driver extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, type: Object })
+  @Prop({
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], required: true },
+  })
   location: {
-    lat: number;
-    lng: number;
+    type: string;
+    coordinates: number[];
   };
 
-  @Prop({ default: true })
+  @Prop({ required: true })
   available: boolean;
 }
 
 export const DriverSchema = SchemaFactory.createForClass(Driver);
+DriverSchema.index({ location: '2dsphere' }); // Índice para búsquedas geoespaciales

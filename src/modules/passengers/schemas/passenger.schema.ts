@@ -1,16 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema()
 export class Passenger extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, type: Object })
+  @Prop({
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], required: true },
+  })
   location: {
-    lat: number;
-    lng: number;
+    type: string;
+    coordinates: number[];
   };
 }
 
 export const PassengerSchema = SchemaFactory.createForClass(Passenger);
+PassengerSchema.index({ location: '2dsphere' }); // Índice para búsquedas geoespaciales

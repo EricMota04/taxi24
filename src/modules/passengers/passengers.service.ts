@@ -35,19 +35,24 @@ export class PassengersService {
   }
 
   async findNearestDrivers(passengerId: string): Promise<Driver[]> {
-    const passenger = await this.findOne(passengerId);
-    if (!passenger) {
-      throw new Error('Passenger not found');
+    const passenger = await this.passengerModel.findById(passengerId);
+    if (!passenger || !passenger.location || !Array.isArray(passenger.location.coordinates) || passenger.location.coordinates.length !== 2) {
+      throw new Error('Passenger location is invalid');
     }
-
-    return this.driverModel.find({
-      available: true,
-    })
-    .sort({
-      'location.lat': 1,
-      'location.lng': 1,
-    })
-    .limit(3)
-    .exec();
+  
+    return this.driverModel.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: passenger.location.coordinates as [number, number] },
+          distanceField: 'distance',
+          maxDistance: 5000, // 5 km en metros
+          spherical: true,
+        },
+      },
+      { $match: { available: true } }, // Solo conductores disponibles
+      { $limit: 3 }, // Máximo 3 conductores
+    ]).exec();
   }
-}
+}  
+  
+

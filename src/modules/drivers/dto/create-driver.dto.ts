@@ -1,22 +1,22 @@
-import { IsString, IsBoolean, IsNumber, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-
-class LocationDto {
-  @IsNumber()
-  lat: number;
-
-  @IsNumber()
-  lng: number;
-}
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsBoolean, IsArray, IsNumber } from 'class-validator';
 
 export class CreateDriverDto {
+  @ApiProperty({ example: 'John Doe', description: 'Nombre del conductor' })
   @IsString()
   name: string;
 
-  @ValidateNested()
-  @Type(() => LocationDto)
-  location: LocationDto;
+  @ApiProperty({
+    example: { type: 'Point', coordinates: [-69.9, 18.5] },
+    description: 'Ubicación del conductor',
+  })
+  @IsArray()
+  location: {
+    type: string;
+    coordinates: number[];
+  };
 
+  @ApiProperty({ example: true, description: 'Disponibilidad del conductor' })
   @IsBoolean()
   available: boolean;
 }
